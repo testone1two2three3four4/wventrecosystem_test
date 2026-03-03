@@ -106,7 +106,7 @@ const RESOURCES = [
     name: "Vantage Ventures Accelerator",
     org: "WVU Chambers College",
     description:
-      "13-week pre-seed accelerator in Wheeling, WV. Teaches founders how to test assumptions with real users. Up to $10K in technical assistance, plus up to $100K seed funding for top performers.",
+      "13-week pre-seed accelerator based in West Virginia. Teaches founders how to test assumptions with real users. Up to $10K in technical assistance, plus up to $100K seed funding for top performers.",
     url: "https://business.wvu.edu/research-outreach/vantage-ventures/accelerator-program",
     stages: ["traction", "funding"],
     type: "Accelerator",
@@ -630,7 +630,7 @@ export default function WVEntrepreneurHub() {
             }}
           >
             <span style={{ animation: "pulse 2s ease infinite" }}>●</span>
-            Built by Vantage Ventures · Wheeling, WV
+            Built by Vantage Ventures
           </div>
 
           <h1
@@ -1014,7 +1014,7 @@ export default function WVEntrepreneurHub() {
           </a>{" "}
           · WVU John Chambers College of Business and Economics
           <br />
-          Wheeling, WV · Part of the West Virginia Entrepreneurship Ecosystem
+          Part of the West Virginia Entrepreneurship Ecosystem
         </p>
       </footer>
     </div>

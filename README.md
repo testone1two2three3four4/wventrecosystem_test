@@ -2,7 +2,7 @@
 
 A central resource hub where aspiring entrepreneurs in West Virginia can find programs, funding, mentorship, and technical resources at every stage of their journey.
 
-**Built by [Vantage Ventures](https://business.wvu.edu/research-outreach/vantage-ventures) · Wheeling, WV**
+**Built by [Vantage Ventures](https://business.wvu.edu/research-outreach/vantage-ventures)**
 
 ## Getting Started
 
