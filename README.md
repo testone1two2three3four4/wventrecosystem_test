@@ -1,8 +1,8 @@
-# WV Founder Hub
+# WV Entrepreneur Navigator
 
-West Virginia's startup ecosystem navigator — a single landing page where aspiring entrepreneurs can find the right programs, funding, grants, mentorship, and technical resources at every stage of their journey.
+A central resource hub where aspiring entrepreneurs in West Virginia can find programs, funding, mentorship, and technical resources at every stage of their journey.
 
-**Built by [Vantage Ventures](https://vantageventures.com) · Wheeling, WV**
+**Built by [Vantage Ventures](https://business.wvu.edu/research-outreach/vantage-ventures) · Wheeling, WV**
 
 ## Getting Started
 
@@ -39,8 +39,24 @@ Output goes to `dist/` — ready for any static hosting.
 
 - **Resources & programs**: Edit the `RESOURCES` array in `src/App.jsx`
 - **Founder stages**: Edit the `STAGES` array in `src/App.jsx`
-- **Colors & branding**: Update CSS variables and color values in the component
-- **Links**: Replace `href="#"` placeholders with real URLs
+- **Colors & branding**: Update the color constants at the top of `src/App.jsx`
+- **Links**: All resource cards link to real WV ecosystem websites
+
+## Resource URLs Included
+
+| Resource | URL |
+|----------|-----|
+| WV SBDC | https://wvsbdc.com |
+| SCORE WV | https://score.org/wv |
+| WV BusinessLink | https://wvbusinesslink.com |
+| WV Hive Network | https://wvhive.com |
+| Vantage Ventures | https://business.wvu.edu/research-outreach/vantage-ventures |
+| TechConnect WV | https://techconnectwv.org |
+| WV Jobs Investment Trust | https://wvjit.wv.gov |
+| Country Roads Angel Network | https://wvcran.com |
+| Ascend WV | https://ascendwv.com |
+| SBA WV District | https://sba.gov/district/west-virginia |
+| WV Economic Development | https://westvirginia.gov |
 
 ## Tech Stack
 

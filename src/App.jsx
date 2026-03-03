@@ -1,1195 +1,880 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
+/* ═══════════════════════════════════════════════
+   DATA: STAGES
+   ═══════════════════════════════════════════════ */
 const STAGES = [
   {
     id: "idea",
     label: "I Have an Idea",
     icon: "💡",
-    color: "#E8A838",
+    color: "#D4882B",
     tagline: "Turn your spark into a plan",
-    description: "You've got a concept but need help validating it, finding co-founders, or understanding your market.",
+    description:
+      "You have a concept but need help validating it, finding co-founders, or understanding your market.",
   },
   {
     id: "traction",
     label: "I Have Traction",
     icon: "🚀",
-    color: "#D4582A",
+    color: "#C04A2B",
     tagline: "Accelerate your momentum",
-    description: "You've talked to users, have early validation, and are ready for structured programs or pitch competitions.",
+    description:
+      "You have talked to users, have early validation, and are ready for structured programs or pitch competitions.",
   },
   {
     id: "funding",
     label: "Ready for Funding",
     icon: "💰",
-    color: "#2A7D4F",
+    color: "#1F7A4D",
     tagline: "Connect with capital",
-    description: "Your business model is validated and you're seeking pre-seed, seed, or growth-stage investment.",
+    description:
+      "Your business model is validated and you are seeking pre-seed, seed, or growth-stage investment.",
   },
   {
     id: "resources",
     label: "Looking for Resources",
     icon: "🤝",
-    color: "#3B5998",
+    color: "#2D5AA0",
     tagline: "Tap into the ecosystem",
-    description: "You want to connect with mentors, communities, co-working spaces, and fellow founders across WV.",
+    description:
+      "You want to connect with mentors, communities, co-working spaces, and fellow founders across WV.",
   },
   {
     id: "technical",
     label: "Need Technical Help",
     icon: "🛠️",
-    color: "#7B3FA0",
+    color: "#6B3FA0",
     tagline: "Build it right",
-    description: "You need help with product development, prototyping, engineering talent, or technical strategy.",
+    description:
+      "You need product development support, technical expertise, or specialized consulting to bring your idea to life.",
   },
   {
     id: "grants",
     label: "Seeking Grants",
-    icon: "🏛️",
-    color: "#1A6B7A",
-    tagline: "Non-dilutive fuel for your mission",
-    description: "You're looking for SBIR/STTR grants, state programs, or federal funding that doesn't require giving up equity.",
+    icon: "📋",
+    color: "#0E6B7A",
+    tagline: "Non-dilutive capital awaits",
+    description:
+      "You are looking for grants, non-dilutive funding, and government programs to support your venture.",
   },
 ];
 
+/* ═══════════════════════════════════════════════
+   DATA: RESOURCES (with real URLs)
+   ═══════════════════════════════════════════════ */
 const RESOURCES = [
   // IDEA STAGE
   {
-    name: "WVU LaunchLab",
-    stage: ["idea"],
-    type: "Program",
-    location: "Morgantown",
-    description: "Free startup support and ideation workshops through WVU's entrepreneurship center. Great first step for student and community founders.",
-    url: "#",
-    featured: false,
+    name: "WV Small Business Development Center",
+    org: "WV SBDC",
+    description:
+      "Free one-on-one business coaching, workshops, and training to help you move from concept to launch. Statewide network with offices across WV.",
+    url: "https://wvsbdc.com/",
+    stages: ["idea", "technical"],
+    type: "Coaching",
   },
   {
-    name: "1863 Ventures",
-    stage: ["idea", "traction"],
-    type: "Accelerator",
-    location: "National (WV eligible)",
-    description: "Supports New Majority entrepreneurs with business-building programs, mentorship, and access to capital.",
-    url: "#",
-    featured: false,
-  },
-  {
-    name: "Startup Weekend WV",
-    stage: ["idea"],
-    type: "Event",
-    location: "Various WV Cities",
-    description: "54-hour events where aspiring entrepreneurs pitch ideas, form teams, and launch startups in a single weekend.",
-    url: "#",
-    featured: false,
-  },
-  {
-    name: "SCORE WV Chapters",
-    stage: ["idea", "resources"],
+    name: "SCORE West Virginia",
+    org: "SBA / SCORE",
+    description:
+      "Free confidential mentoring from experienced business professionals. Get matched with a volunteer mentor who has real-world expertise in your industry.",
+    url: "https://www.score.org/wv",
+    stages: ["idea", "resources"],
     type: "Mentorship",
-    location: "Statewide",
-    description: "Free mentoring from experienced business professionals. Workshops on business planning, marketing, and financial projections.",
-    url: "#",
-    featured: false,
+  },
+  {
+    name: "WV BusinessLink",
+    org: "WV SBDC",
+    description:
+      "Statewide platform connecting entrepreneurs with 170+ resource partners. Find training events, funding info, and connections tailored to your stage.",
+    url: "https://wvbusinesslink.com/",
+    stages: ["idea", "resources"],
+    type: "Platform",
+  },
+  {
+    name: "WV Hive Network",
+    org: "NRGRDA",
+    description:
+      "Entrepreneur hub in Southern WV offering business advising, makerspace access, co-working, and training across a 13-county region. Based in Beckley.",
+    url: "https://wvhive.com/",
+    stages: ["idea", "resources", "technical"],
+    type: "Incubator",
   },
   // TRACTION STAGE
   {
-    name: "Vantage Ventures",
-    stage: ["traction"],
+    name: "Vantage Ventures Accelerator",
+    org: "WVU Chambers College",
+    description:
+      "13-week pre-seed accelerator in Wheeling, WV. Teaches founders how to test assumptions with real users. Up to $10K in technical assistance, plus up to $100K seed funding for top performers.",
+    url: "https://business.wvu.edu/research-outreach/vantage-ventures/accelerator-program",
+    stages: ["traction", "funding"],
     type: "Accelerator",
-    location: "Wheeling",
-    description: "13-week pre-seed accelerator teaching unbiased assumption testing and real user validation. $10K Validation Day prize. Applications open for Fall 2026 — deadline May 7.",
-    url: "#",
     featured: true,
   },
   {
-    name: "Ascend WV",
-    stage: ["traction", "resources"],
-    type: "Program",
-    location: "Statewide",
-    description: "Incentive program attracting remote workers and entrepreneurs to West Virginia with cash incentives and community integration.",
-    url: "#",
-    featured: false,
+    name: "TechConnect West Virginia",
+    org: "TechConnect WV",
+    description:
+      "Statewide nonprofit advancing tech entrepreneurship. Offers Tech Fellows programs, CatalyzeWV venture events, one-on-one startup support, and connections to funding.",
+    url: "https://techconnectwv.org/",
+    stages: ["traction", "technical", "resources"],
+    type: "Ecosystem",
   },
   {
-    name: "WV Pitch Competition Circuit",
-    stage: ["traction"],
+    name: "Bridging Innovation Week",
+    org: "WV Entrepreneurship Ecosystem",
+    description:
+      "The state's premier annual entrepreneurship event. Features pitch competitions, workshops, networking, and the Vantage Ventures Validation Day with a $10K prize.",
+    url: "https://wvbusinesslink.com/",
+    stages: ["traction", "resources"],
+    type: "Event",
+  },
+  {
+    name: "Pitch Southern West Virginia",
+    org: "WV Hive / NRGRDA",
+    description:
+      "Business idea competition run by the WV Hive. Present your strategy to judges and compete for prizes and recognition in the Southern WV region.",
+    url: "https://wvhive.com/",
+    stages: ["traction"],
     type: "Competition",
-    location: "Various",
-    description: "Regional and statewide pitch events including Bridging Innovation Week, collegiate competitions, and community showcases.",
-    url: "#",
-    featured: false,
-  },
-  {
-    name: "WVU Chambers College of Business",
-    stage: ["traction", "resources"],
-    type: "Academic Partner",
-    location: "Morgantown",
-    description: "Entrepreneurship programs, student venture competitions, and connections to the broader WV innovation ecosystem.",
-    url: "#",
-    featured: false,
   },
   // FUNDING STAGE
   {
+    name: "Vantage Ventures Seed Fund",
+    org: "WVU Foundation",
+    description:
+      "Investments up to $100K via SAFE agreements for accelerator graduates. Designed to stimulate early-stage deal flow and prepare WV founders for venture capital.",
+    url: "https://business.wvu.edu/research-outreach/vantage-ventures/seed-investment-fund",
+    stages: ["funding"],
+    type: "Seed Fund",
+  },
+  {
     name: "WV Jobs Investment Trust",
-    stage: ["funding"],
-    type: "Investment",
-    location: "Charleston",
-    description: "State-chartered venture capital fund investing in early-stage WV companies. Focus on tech-enabled businesses with growth potential.",
-    url: "#",
-    featured: false,
+    org: "State of WV",
+    description:
+      "West Virginia's public venture capital fund since 1992. Invests in early, growth, and mature-stage companies creating jobs in the state. Sector-agnostic.",
+    url: "https://wvjit.wv.gov/",
+    stages: ["funding"],
+    type: "Venture Capital",
   },
   {
-    name: "Mountaineer Capital",
-    stage: ["funding"],
-    type: "Investment",
-    location: "WV-based",
-    description: "Angel investment network connecting WV startups with accredited investors who understand the regional market.",
-    url: "#",
-    featured: false,
+    name: "Country Roads Angel Network",
+    org: "NRGRDA / WV Hive",
+    description:
+      "Statewide angel investment network connecting accredited investors with WV-based startups. Provides both capital and mentorship from experienced investors.",
+    url: "https://wvcran.com/",
+    stages: ["funding"],
+    type: "Angel Network",
   },
   {
-    name: "Innova Commercialization Group",
-    stage: ["funding", "technical"],
-    type: "Commercialization",
-    location: "Morgantown",
-    description: "Helps turn university research into market-ready products. Licensing support, spin-out creation, and investor connections.",
-    url: "#",
-    featured: false,
-  },
-  {
-    name: "WV Angel Fund Network",
-    stage: ["funding"],
-    type: "Investment",
-    location: "Statewide",
-    description: "Network of angel investors focused on West Virginia startups across sectors including tech, energy, and healthcare.",
-    url: "#",
-    featured: false,
+    name: "WV Capital Access Program (WVCAP)",
+    org: "WVJIT",
+    description:
+      "Debt and equity capital for creditworthy WV small businesses that may not fit traditional lending models. Administered by the Jobs Investment Trust.",
+    url: "https://wvjit.wv.gov/wvcap/",
+    stages: ["funding"],
+    type: "Capital Program",
   },
   // RESOURCES STAGE
   {
-    name: "TechConnect WV",
-    stage: ["resources", "technical"],
+    name: "Ascend WV",
+    org: "Brad & Alys Smith Foundation",
+    description:
+      "Remote worker incentive program offering $12K to relocate to WV plus free outdoor recreation, co-working space, and community programming.",
+    url: "https://ascendwv.com/",
+    stages: ["resources"],
+    type: "Relocation",
+  },
+  {
+    name: "SBA West Virginia District Office",
+    org: "U.S. Small Business Administration",
+    description:
+      "Federal resource for WV businesses. Offers SBA loan programs (7a, 504, Microloans), counseling, federal contracting support, and certifications.",
+    url: "https://www.sba.gov/district/west-virginia",
+    stages: ["resources", "funding", "grants"],
+    type: "Federal",
+  },
+  {
+    name: "WV Women's Business Center",
+    org: "WV Women",
+    description:
+      "Dedicated support for women entrepreneurs in West Virginia. Business coaching, workshops, and networking tailored to women-owned businesses.",
+    url: "https://wvsbdc.com/",
+    stages: ["resources"],
     type: "Community",
-    location: "Statewide",
-    description: "Technology community connecting founders, developers, and innovators across West Virginia through meetups and online forums.",
-    url: "#",
-    featured: false,
-  },
-  {
-    name: "Wheeling Heritage Trail Innovation District",
-    stage: ["resources"],
-    type: "Co-working",
-    location: "Wheeling",
-    description: "Revitalized innovation district with co-working spaces, event venues, and a growing startup community in downtown Wheeling.",
-    url: "#",
-    featured: false,
-  },
-  {
-    name: "Robert C. Byrd Institute (RCBI)",
-    stage: ["resources", "technical"],
-    type: "Technical Assistance",
-    location: "Huntington / Charleston",
-    description: "Advanced manufacturing and prototyping resources. CNC, 3D printing, laser cutting, and technical training for entrepreneurs.",
-    url: "#",
-    featured: false,
-  },
-  {
-    name: "WV Small Business Development Center",
-    stage: ["resources", "idea"],
-    type: "Advisory",
-    location: "Statewide (multiple offices)",
-    description: "Free business advising, training, and market research support. Help with business plans, financial projections, and strategy.",
-    url: "#",
-    featured: false,
   },
   // TECHNICAL STAGE
   {
-    name: "WVU STEM Talent Pipeline",
-    stage: ["technical"],
-    type: "Talent",
-    location: "Morgantown",
-    description: "Connect with computer science, engineering, and data science students and graduates for internships and full-time roles.",
-    url: "#",
-    featured: false,
+    name: "INNOVA Commercialization Group",
+    org: "WVHTC Foundation",
+    description:
+      "Statewide commercialization support for innovators. Provides professional and technical assistance plus early-stage investment capital to bring new products to market.",
+    url: "https://techconnectwv.org/",
+    stages: ["technical", "funding"],
+    type: "Commercialization",
   },
   {
-    name: "Generation WV Tech Corps",
-    stage: ["technical", "resources"],
-    type: "Talent",
-    location: "Statewide",
-    description: "Programs placing young tech professionals in WV companies. Build your technical team with emerging local talent.",
-    url: "#",
-    featured: false,
+    name: "Vantage Ventures External Partners",
+    org: "WVU Chambers College",
+    description:
+      "Technical assistance vendor network. Access paid experts in product development, AI, startup legal, and accounting through the EDA-funded program.",
+    url: "https://business.wvu.edu/research-outreach/vantage-ventures/external-partner-application",
+    stages: ["technical"],
+    type: "Vendor Network",
+  },
+  {
+    name: "WV SBDC Innovation-Technology Program",
+    org: "WV SBDC",
+    description:
+      "Specialized coaching track focused on technology commercialization and innovation. Helps businesses navigate bringing new tech products and services to market.",
+    url: "https://wvsbdc.com/services/",
+    stages: ["technical", "idea"],
+    type: "Coaching",
   },
   // GRANTS STAGE
   {
-    name: "WV SBIR/STTR Assistance",
-    stage: ["grants"],
-    type: "Grant Support",
-    location: "Statewide",
-    description: "Technical assistance for applying to federal Small Business Innovation Research and Small Business Technology Transfer grants.",
-    url: "#",
-    featured: false,
+    name: "EDA Technical Assistance Funding",
+    org: "U.S. EDA / Vantage Ventures",
+    description:
+      "Up to $10,000 in non-dilutive technical assistance funding for startups accepted into the Vantage Ventures accelerator program. Federal grant-backed.",
+    url: "https://business.wvu.edu/research-outreach/vantage-ventures/accelerator-program",
+    stages: ["grants", "traction"],
+    type: "Grant",
   },
   {
-    name: "Appalachian Regional Commission (ARC)",
-    stage: ["grants", "resources"],
-    type: "Federal Grant",
-    location: "Appalachian WV",
-    description: "Federal funding for economic development, entrepreneurship ecosystem building, and workforce development in Appalachian communities.",
-    url: "#",
-    featured: false,
+    name: "WV State Trade Expansion Program (STEP)",
+    org: "WV Dept. of Economic Development",
+    description:
+      "Reimbursement of up to 75% of eligible export expenses, max $15K. For established WV businesses looking to expand into global markets.",
+    url: "https://westvirginia.gov/wvstep/",
+    stages: ["grants"],
+    type: "Grant",
   },
   {
-    name: "WV Forward Innovation Grants",
-    stage: ["grants"],
-    type: "State Grant",
-    location: "Statewide",
-    description: "State-funded grants supporting technology innovation, small business development, and economic diversification in West Virginia.",
-    url: "#",
-    featured: false,
+    name: "WV Dept. of Economic Development",
+    org: "State of WV",
+    description:
+      "State-level support for business growth. Tax credits, incentive programs, site selection assistance, and connections to workforce development resources.",
+    url: "https://westvirginia.gov/divisions/small-business-development-center/",
+    stages: ["grants", "resources"],
+    type: "State Program",
   },
   {
-    name: "EDA University Center Grants",
-    stage: ["grants", "technical"],
-    type: "Federal Grant",
-    location: "University-affiliated",
-    description: "Economic Development Administration grants supporting university-led entrepreneurship and commercialization programs.",
-    url: "#",
-    featured: false,
+    name: "FASTER WV Program",
+    org: "BridgeValley CTC",
+    description:
+      "Comprehensive business coaching connecting entrepreneurs with experienced mentors. Has supported the creation of 50+ businesses and 150 jobs statewide.",
+    url: "https://wvsbdc.com/",
+    stages: ["grants", "idea"],
+    type: "Program",
   },
 ];
 
-const RESOURCE_TYPES = [...new Set(RESOURCES.map((r) => r.type))].sort();
+/* ═══════════════════════════════════════════════
+   STYLES
+   ═══════════════════════════════════════════════ */
+const BG = "#0C0F14";
+const SURFACE = "#14181F";
+const SURFACE2 = "#1A1F28";
+const BORDER = "#252B36";
+const TEXT = "#E8ECF1";
+const TEXT_MID = "#9BA3B2";
+const TEXT_DIM = "#5F6878";
+const ACCENT = "#EAAA00";
+const ACCENT_DIM = "rgba(234,170,0,0.12)";
 
-// -- Reusable Components --
+/* ═══════════════════════════════════════════════
+   COMPONENTS
+   ═══════════════════════════════════════════════ */
 
-function MountainSVG() {
-  return (
-    <svg
-      viewBox="0 0 1440 220"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      style={{ width: "100%", display: "block", marginTop: -1 }}
-    >
-      <path
-        d="M0 220L48 198C96 176 192 132 288 121C384 110 480 132 576 143C672 154 768 154 864 143C960 132 1056 110 1152 104.5C1248 99 1344 110 1392 115.5L1440 121V0H1392C1344 0 1248 0 1152 0C1056 0 960 0 864 0C768 0 672 0 576 0C480 0 384 0 288 0C192 0 96 0 48 0H0V220Z"
-        fill="#1B1F23"
-      />
-    </svg>
-  );
-}
-
-function NavBar({ activeSection, onNavigate }) {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  const links = [
-    { id: "hero", label: "Home" },
-    { id: "pathways", label: "Find Your Path" },
-    { id: "directory", label: "Directory" },
-    { id: "about", label: "About" },
-  ];
-
-  return (
-    <nav
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        background: scrolled ? "rgba(27,31,35,0.97)" : "transparent",
-        backdropFilter: scrolled ? "blur(12px)" : "none",
-        transition: "all 0.4s cubic-bezier(.4,0,.2,1)",
-        borderBottom: scrolled ? "1px solid rgba(232,168,56,0.15)" : "1px solid transparent",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: "0 auto",
-          padding: "0 24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          height: 64,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            cursor: "pointer",
-          }}
-          onClick={() => onNavigate("hero")}
-        >
-          <span style={{ fontSize: 26 }}>⛰️</span>
-          <span
-            style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontWeight: 800,
-              fontSize: 20,
-              color: "#E8A838",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            WV Founder Hub
-          </span>
-        </div>
-
-        {/* Desktop links */}
-        <div
-          style={{
-            display: "flex",
-            gap: 32,
-            alignItems: "center",
-          }}
-          className="nav-desktop"
-        >
-          {links.map((l) => (
-            <button
-              key={l.id}
-              onClick={() => onNavigate(l.id)}
-              style={{
-                background: "none",
-                border: "none",
-                color: activeSection === l.id ? "#E8A838" : "rgba(255,255,255,0.7)",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: 14,
-                fontWeight: 500,
-                cursor: "pointer",
-                padding: "4px 0",
-                borderBottom: activeSection === l.id ? "2px solid #E8A838" : "2px solid transparent",
-                transition: "all 0.2s",
-                letterSpacing: "0.01em",
-              }}
-            >
-              {l.label}
-            </button>
-          ))}
-          <a
-            href="#"
-            style={{
-              background: "linear-gradient(135deg, #E8A838, #D4582A)",
-              color: "#fff",
-              padding: "8px 20px",
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 600,
-              textDecoration: "none",
-              fontFamily: "'DM Sans', sans-serif",
-              letterSpacing: "0.02em",
-              transition: "transform 0.2s, box-shadow 0.2s",
-              boxShadow: "0 2px 12px rgba(232,168,56,0.25)",
-            }}
-          >
-            Apply to Vantage →
-          </a>
-        </div>
-
-        {/* Mobile hamburger */}
-        <button
-          className="nav-mobile-toggle"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          style={{
-            display: "none",
-            background: "none",
-            border: "none",
-            color: "#E8A838",
-            fontSize: 28,
-            cursor: "pointer",
-            padding: 4,
-          }}
-        >
-          {mobileOpen ? "✕" : "☰"}
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div
-          style={{
-            background: "rgba(27,31,35,0.98)",
-            padding: "16px 24px 24px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-          }}
-          className="nav-mobile-menu"
-        >
-          {links.map((l) => (
-            <button
-              key={l.id}
-              onClick={() => {
-                onNavigate(l.id);
-                setMobileOpen(false);
-              }}
-              style={{
-                background: "none",
-                border: "none",
-                color: activeSection === l.id ? "#E8A838" : "rgba(255,255,255,0.7)",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: 16,
-                fontWeight: 500,
-                cursor: "pointer",
-                textAlign: "left",
-                padding: "8px 0",
-              }}
-            >
-              {l.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </nav>
-  );
-}
-
-function StageCard({ stage, isActive, onClick, index }) {
+function ResourceCard({ resource, stageColor }) {
   const [hovered, setHovered] = useState(false);
+  const matchedStages = STAGES.filter((s) => resource.stages.includes(s.id));
+
   return (
-    <button
-      onClick={onClick}
+    <a
+      href={resource.url}
+      target="_blank"
+      rel="noopener noreferrer"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: isActive
-          ? `linear-gradient(135deg, ${stage.color}22, ${stage.color}11)`
-          : hovered
-          ? "rgba(255,255,255,0.04)"
-          : "rgba(255,255,255,0.02)",
-        border: isActive ? `2px solid ${stage.color}` : "2px solid rgba(255,255,255,0.08)",
-        borderRadius: 16,
-        padding: "28px 24px",
+        display: "block",
+        textDecoration: "none",
+        background: hovered ? SURFACE2 : SURFACE,
+        border: `1px solid ${hovered ? stageColor || ACCENT : BORDER}`,
+        borderRadius: 12,
+        padding: "24px 24px 20px",
+        transition: "all 0.25s ease",
+        transform: hovered ? "translateY(-2px)" : "translateY(0)",
+        boxShadow: hovered
+          ? `0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px ${stageColor || ACCENT}30`
+          : "0 2px 8px rgba(0,0,0,0.15)",
         cursor: "pointer",
-        textAlign: "left",
-        transition: "all 0.35s cubic-bezier(.4,0,.2,1)",
-        transform: hovered && !isActive ? "translateY(-4px)" : "translateY(0)",
-        boxShadow: isActive
-          ? `0 8px 32px ${stage.color}22`
-          : hovered
-          ? "0 8px 24px rgba(0,0,0,0.3)"
-          : "none",
-        opacity: 0,
-        animation: `fadeSlideUp 0.5s ease ${index * 0.08}s forwards`,
-        minWidth: 0,
-        flex: "1 1 280px",
-        maxWidth: 380,
-      }}
-    >
-      <div style={{ fontSize: 36, marginBottom: 12 }}>{stage.icon}</div>
-      <div
-        style={{
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontSize: 18,
-          fontWeight: 700,
-          color: isActive ? stage.color : "#F0ECE3",
-          marginBottom: 6,
-          lineHeight: 1.3,
-        }}
-      >
-        {stage.label}
-      </div>
-      <div
-        style={{
-          fontFamily: "'DM Sans', sans-serif",
-          fontSize: 13,
-          color: "rgba(240,236,227,0.55)",
-          fontWeight: 500,
-          letterSpacing: "0.02em",
-        }}
-      >
-        {stage.tagline}
-      </div>
-    </button>
-  );
-}
-
-function ResourceCard({ resource, index }) {
-  const [hovered, setHovered] = useState(false);
-  const stageData = STAGES.find((s) => s.id === resource.stage[0]);
-  const color = stageData?.color || "#E8A838";
-
-  return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: hovered ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.025)",
-        border: resource.featured
-          ? `1px solid ${color}88`
-          : "1px solid rgba(255,255,255,0.06)",
-        borderRadius: 16,
-        padding: 28,
-        transition: "all 0.3s cubic-bezier(.4,0,.2,1)",
-        transform: hovered ? "translateY(-3px)" : "translateY(0)",
-        boxShadow: hovered ? "0 12px 40px rgba(0,0,0,0.25)" : "none",
         position: "relative",
         overflow: "hidden",
-        opacity: 0,
-        animation: `fadeSlideUp 0.4s ease ${index * 0.05}s forwards`,
       }}
     >
       {resource.featured && (
         <div
           style={{
             position: "absolute",
-            top: 16,
-            right: 16,
-            background: `linear-gradient(135deg, ${color}, ${color}cc)`,
-            color: "#fff",
+            top: 12,
+            right: -28,
+            background: ACCENT,
+            color: BG,
             fontSize: 10,
             fontWeight: 700,
-            padding: "4px 10px",
-            borderRadius: 20,
-            fontFamily: "'DM Sans', sans-serif",
-            letterSpacing: "0.08em",
+            padding: "3px 32px",
+            transform: "rotate(45deg)",
+            letterSpacing: "0.05em",
             textTransform: "uppercase",
           }}
         >
-          ★ Featured
+          Featured
         </div>
       )}
 
       <div
         style={{
           display: "flex",
-          flexWrap: "wrap",
-          gap: 6,
-          marginBottom: 14,
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: 10,
+          gap: 12,
         }}
       >
-        {resource.stage.map((s) => {
-          const sd = STAGES.find((st) => st.id === s);
-          return (
-            <span
-              key={s}
-              style={{
-                background: `${sd?.color || "#666"}22`,
-                color: sd?.color || "#aaa",
-                fontSize: 11,
-                fontWeight: 600,
-                padding: "3px 10px",
-                borderRadius: 20,
-                fontFamily: "'DM Sans', sans-serif",
-                letterSpacing: "0.03em",
-              }}
-            >
-              {sd?.icon} {sd?.label}
-            </span>
-          );
-        })}
+        <div>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: stageColor || ACCENT,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              marginBottom: 6,
+            }}
+          >
+            {resource.type}
+          </div>
+          <h3
+            style={{
+              fontSize: 17,
+              fontWeight: 700,
+              color: TEXT,
+              margin: 0,
+              lineHeight: 1.3,
+              fontFamily: "'Playfair Display', Georgia, serif",
+            }}
+          >
+            {resource.name}
+          </h3>
+        </div>
+        <div
+          style={{
+            fontSize: 18,
+            opacity: hovered ? 1 : 0.4,
+            transition: "opacity 0.2s",
+            flexShrink: 0,
+            marginTop: 2,
+          }}
+        >
+          ↗
+        </div>
       </div>
 
       <div
         style={{
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontSize: 20,
-          fontWeight: 700,
-          color: "#F0ECE3",
-          marginBottom: 4,
-          lineHeight: 1.3,
+          fontSize: 11,
+          color: TEXT_MID,
+          marginBottom: 10,
+          fontWeight: 500,
         }}
       >
-        {resource.name}
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          gap: 16,
-          marginBottom: 12,
-          flexWrap: "wrap",
-        }}
-      >
-        <span
-          style={{
-            fontSize: 12,
-            color: "rgba(240,236,227,0.45)",
-            fontFamily: "'DM Sans', sans-serif",
-            fontWeight: 500,
-          }}
-        >
-          📍 {resource.location}
-        </span>
-        <span
-          style={{
-            fontSize: 12,
-            color: "rgba(240,236,227,0.45)",
-            fontFamily: "'DM Sans', sans-serif",
-            fontWeight: 500,
-          }}
-        >
-          🏷️ {resource.type}
-        </span>
+        {resource.org}
       </div>
 
       <p
         style={{
-          fontFamily: "'DM Sans', sans-serif",
-          fontSize: 14,
-          color: "rgba(240,236,227,0.65)",
+          fontSize: 13.5,
           lineHeight: 1.65,
-          margin: 0,
-          marginBottom: 16,
+          color: TEXT_MID,
+          margin: "0 0 16px",
         }}
       >
         {resource.description}
       </p>
 
-      <a
-        href={resource.url}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {matchedStages.map((s) => (
+          <span
+            key={s.id}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              fontSize: 11,
+              color: s.color,
+              background: `${s.color}18`,
+              border: `1px solid ${s.color}30`,
+              padding: "3px 8px",
+              borderRadius: 6,
+              fontWeight: 500,
+            }}
+          >
+            {s.icon} {s.label}
+          </span>
+        ))}
+      </div>
+
+      <div
         style={{
-          display: "inline-flex",
+          marginTop: 14,
+          paddingTop: 12,
+          borderTop: `1px solid ${BORDER}`,
+          display: "flex",
           alignItems: "center",
           gap: 6,
-          fontSize: 13,
+          fontSize: 12,
           fontWeight: 600,
-          color: color,
-          textDecoration: "none",
-          fontFamily: "'DM Sans', sans-serif",
-          transition: "gap 0.2s",
+          color: hovered ? ACCENT : TEXT_DIM,
+          transition: "color 0.2s",
         }}
       >
-        Learn more <span style={{ transition: "transform 0.2s" }}>→</span>
-      </a>
-    </div>
+        Visit Website →
+      </div>
+    </a>
   );
 }
 
-// -- Main App --
-
-export default function WVFounderHub() {
+/* ═══════════════════════════════════════════════
+   MAIN APP
+   ═══════════════════════════════════════════════ */
+export default function WVEntrepreneurHub() {
   const [activeStage, setActiveStage] = useState(null);
-  const [typeFilter, setTypeFilter] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeSection, setActiveSection] = useState("hero");
-  const sectionRefs = useRef({});
-
-  const filteredResources = RESOURCES.filter((r) => {
-    const matchesStage = !activeStage || r.stage.includes(activeStage);
-    const matchesType = !typeFilter || r.type === typeFilter;
-    const matchesSearch =
-      !searchQuery ||
-      r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.location.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStage && matchesType && matchesSearch;
-  });
-
-  const activeStageData = STAGES.find((s) => s.id === activeStage);
-
-  const scrollTo = (id) => {
-    const el = sectionRefs.current[id];
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const resourcesRef = useRef(null);
+  const lastScroll = useRef(0);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      { threshold: 0.3, rootMargin: "-64px 0px 0px 0px" }
-    );
-
-    Object.values(sectionRefs.current).forEach((el) => {
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
+    const h = () => {
+      const curr = window.scrollY;
+      setHeaderVisible(curr < 60 || curr < lastScroll.current);
+      lastScroll.current = curr;
+    };
+    window.addEventListener("scroll", h, { passive: true });
+    return () => window.removeEventListener("scroll", h);
   }, []);
+
+  const filteredResources = RESOURCES.filter((r) => {
+    const matchesStage = !activeStage || r.stages.includes(activeStage);
+    const q = searchQuery.toLowerCase();
+    const matchesSearch =
+      !q ||
+      r.name.toLowerCase().includes(q) ||
+      r.description.toLowerCase().includes(q) ||
+      r.org.toLowerCase().includes(q) ||
+      r.type.toLowerCase().includes(q);
+    return matchesStage && matchesSearch;
+  });
+
+  const scrollToResources = useCallback(() => {
+    resourcesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  const handleStageClick = useCallback(
+    (stageId) => {
+      setActiveStage((prev) => (prev === stageId ? null : stageId));
+      setTimeout(() => scrollToResources(), 100);
+    },
+    [scrollToResources]
+  );
+
+  const activeStageData = STAGES.find((s) => s.id === activeStage);
 
   return (
     <div
       style={{
-        background: "#1B1F23",
+        fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+        background: BG,
+        color: TEXT,
         minHeight: "100vh",
-        color: "#F0ECE3",
-        overflowX: "hidden",
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap');
-
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        @keyframes shimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
-        }
-
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-12px); }
-        }
-
-        @keyframes pulse {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 0.8; }
-        }
-
-        ::selection {
-          background: #E8A838;
-          color: #1B1F23;
-        }
-
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1B1F23; }
-        ::-webkit-scrollbar-thumb { background: #E8A83855; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #E8A83888; }
-
-        @media (max-width: 768px) {
-          .nav-desktop { display: none !important; }
-          .nav-mobile-toggle { display: block !important; }
-          .hero-title { font-size: 40px !important; }
-          .hero-sub { font-size: 16px !important; }
-          .stage-grid { gap: 12px !important; }
-          .resource-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-
-        @media (min-width: 769px) {
-          .nav-mobile-toggle { display: none !important; }
-          .nav-mobile-menu { display: none !important; }
-        }
+        html { scroll-behavior: smooth; }
+        ::selection { background: ${ACCENT}40; color: ${TEXT}; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: ${BG}; }
+        ::-webkit-scrollbar-thumb { background: ${BORDER}; border-radius: 3px; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
       `}</style>
 
-      <NavBar activeSection={activeSection} onNavigate={scrollTo} />
-
-      {/* ========== HERO ========== */}
-      <section
-        id="hero"
-        ref={(el) => (sectionRefs.current["hero"] = el)}
+      {/* ─── STICKY HEADER ─── */}
+      <header
         style={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          background: `${BG}ee`,
+          backdropFilter: "blur(16px)",
+          borderBottom: `1px solid ${BORDER}`,
+          padding: "0 24px",
+          transform: headerVisible ? "translateY(0)" : "translateY(-100%)",
+          transition: "transform 0.3s ease",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1200,
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            height: 56,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 20 }}>⛰️</span>
+            <span
+              style={{
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontWeight: 700,
+                fontSize: 16,
+                color: TEXT,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              WV Founder Hub
+            </span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <a
+              href="https://business.wvu.edu/research-outreach/vantage-ventures/accelerator-program"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: BG,
+                background: ACCENT,
+                padding: "7px 16px",
+                borderRadius: 8,
+                textDecoration: "none",
+                transition: "all 0.2s",
+              }}
+            >
+              Apply to Vantage Ventures
+            </a>
+          </div>
+        </div>
+      </header>
+
+      {/* ─── HERO ─── */}
+      <section
+        style={{
+          paddingTop: 120,
+          paddingBottom: 80,
           textAlign: "center",
-          padding: "120px 24px 60px",
           position: "relative",
           overflow: "hidden",
         }}
       >
-        {/* Background effects */}
+        {/* Subtle gradient bg */}
         <div
           style={{
             position: "absolute",
-            inset: 0,
-            background: "radial-gradient(ellipse 80% 50% at 50% 20%, #E8A83812, transparent)",
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: "15%",
-            left: "10%",
-            width: 300,
-            height: 300,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, #D4582A08, transparent)",
-            animation: "float 8s ease-in-out infinite",
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: "40%",
-            right: "8%",
-            width: 200,
-            height: 200,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, #2A7D4F08, transparent)",
-            animation: "float 10s ease-in-out 2s infinite",
+            top: 0,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 800,
+            height: 500,
+            background: `radial-gradient(ellipse at center, ${ACCENT}08 0%, transparent 70%)`,
             pointerEvents: "none",
           }}
         />
 
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 800 }}>
+        <div
+          style={{
+            position: "relative",
+            maxWidth: 720,
+            margin: "0 auto",
+            padding: "0 24px",
+            animation: "fadeUp 0.6s ease",
+          }}
+        >
           <div
             style={{
-              display: "inline-block",
-              background: "rgba(232,168,56,0.1)",
-              border: "1px solid rgba(232,168,56,0.2)",
-              borderRadius: 30,
-              padding: "6px 18px",
-              marginBottom: 32,
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 13,
-              fontWeight: 600,
-              color: "#E8A838",
-              letterSpacing: "0.06em",
-              opacity: 0,
-              animation: "fadeSlideUp 0.6s ease 0.2s forwards",
-            }}
-          >
-            🏔️ WEST VIRGINIA'S STARTUP ECOSYSTEM
-          </div>
-
-          <h1
-            className="hero-title"
-            style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: 64,
-              fontWeight: 900,
-              lineHeight: 1.08,
-              marginBottom: 24,
-              letterSpacing: "-0.03em",
-              opacity: 0,
-              animation: "fadeSlideUp 0.7s ease 0.35s forwards",
-            }}
-          >
-            Build Something{" "}
-            <span
-              style={{
-                background: "linear-gradient(135deg, #E8A838, #D4582A, #E8A838)",
-                backgroundSize: "200% auto",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                animation: "shimmer 4s linear infinite",
-              }}
-            >
-              Bold
-            </span>{" "}
-            in the Mountain State
-          </h1>
-
-          <p
-            className="hero-sub"
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 19,
-              color: "rgba(240,236,227,0.6)",
-              lineHeight: 1.7,
-              maxWidth: 600,
-              margin: "0 auto 40px",
-              opacity: 0,
-              animation: "fadeSlideUp 0.7s ease 0.5s forwards",
-            }}
-          >
-            Whether you're sketching your first idea on a napkin or ready to raise
-            your first round — West Virginia has the people, programs, and capital
-            to help you launch.
-          </p>
-
-          <div
-            style={{
-              display: "flex",
-              gap: 16,
-              justifyContent: "center",
-              flexWrap: "wrap",
-              opacity: 0,
-              animation: "fadeSlideUp 0.7s ease 0.65s forwards",
-            }}
-          >
-            <button
-              onClick={() => scrollTo("pathways")}
-              style={{
-                background: "linear-gradient(135deg, #E8A838, #D4582A)",
-                color: "#fff",
-                border: "none",
-                padding: "14px 32px",
-                borderRadius: 12,
-                fontSize: 15,
-                fontWeight: 700,
-                cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
-                letterSpacing: "0.02em",
-                transition: "transform 0.2s, box-shadow 0.2s",
-                boxShadow: "0 4px 24px rgba(232,168,56,0.3)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow = "0 8px 32px rgba(232,168,56,0.4)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "0 4px 24px rgba(232,168,56,0.3)";
-              }}
-            >
-              Find Your Path →
-            </button>
-            <button
-              onClick={() => scrollTo("directory")}
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                color: "#F0ECE3",
-                border: "1px solid rgba(255,255,255,0.12)",
-                padding: "14px 32px",
-                borderRadius: 12,
-                fontSize: 15,
-                fontWeight: 600,
-                cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
-                letterSpacing: "0.02em",
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.08)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-              }}
-            >
-              Browse All Resources
-            </button>
-          </div>
-
-          {/* Stats bar */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 48,
-              marginTop: 64,
-              flexWrap: "wrap",
-              opacity: 0,
-              animation: "fadeSlideUp 0.7s ease 0.85s forwards",
-            }}
-          >
-            {[
-              { num: "20+", label: "Programs & Resources" },
-              { num: "6", label: "Founder Stages Covered" },
-              { num: "100%", label: "Mountain State Proud" },
-            ].map((stat, i) => (
-              <div key={i} style={{ textAlign: "center" }}>
-                <div
-                  style={{
-                    fontFamily: "'Playfair Display', Georgia, serif",
-                    fontSize: 32,
-                    fontWeight: 800,
-                    color: "#E8A838",
-                    lineHeight: 1,
-                  }}
-                >
-                  {stat.num}
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: 12,
-                    color: "rgba(240,236,227,0.4)",
-                    fontWeight: 500,
-                    marginTop: 4,
-                    letterSpacing: "0.04em",
-                  }}
-                >
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <MountainSVG />
-
-      {/* ========== PATHWAYS ========== */}
-      <section
-        id="pathways"
-        ref={(el) => (sectionRefs.current["pathways"] = el)}
-        style={{
-          padding: "80px 24px",
-          maxWidth: 1200,
-          margin: "0 auto",
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <span
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              background: ACCENT_DIM,
+              border: `1px solid ${ACCENT}30`,
+              borderRadius: 100,
+              padding: "6px 16px",
               fontSize: 12,
-              fontWeight: 700,
-              color: "#E8A838",
-              letterSpacing: "0.12em",
+              fontWeight: 600,
+              color: ACCENT,
+              marginBottom: 28,
+              letterSpacing: "0.04em",
               textTransform: "uppercase",
             }}
           >
-            Where Are You?
-          </span>
-          <h2
+            <span style={{ animation: "pulse 2s ease infinite" }}>●</span>
+            Built by Vantage Ventures · Wheeling, WV
+          </div>
+
+          <h1
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: 42,
+              fontSize: "clamp(32px, 5vw, 52px)",
               fontWeight: 800,
-              marginTop: 12,
               lineHeight: 1.15,
+              color: TEXT,
+              marginBottom: 20,
               letterSpacing: "-0.02em",
             }}
           >
-            Choose Your Stage
-          </h2>
+            West Virginia
+            <br />
+            <span style={{ color: ACCENT }}>Entrepreneur Navigator</span>
+          </h1>
+
           <p
             style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 16,
-              color: "rgba(240,236,227,0.5)",
-              maxWidth: 520,
-              margin: "16px auto 0",
-              lineHeight: 1.6,
+              fontSize: "clamp(15px, 2vw, 18px)",
+              lineHeight: 1.7,
+              color: TEXT_MID,
+              maxWidth: 560,
+              margin: "0 auto 36px",
             }}
           >
-            Every founder's journey is different. Select where you are right now,
-            and we'll show you exactly where to go next.
+            Every resource, program, and funding opportunity for founders in
+            West Virginia. Find your path from idea to funded startup.
           </p>
         </div>
+      </section>
 
-        <div
-          className="stage-grid"
+      {/* ─── STAGE SELECTOR ─── */}
+      <section
+        style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 48px" }}
+      >
+        <h2
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 16,
-            justifyContent: "center",
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: 22,
+            fontWeight: 700,
+            marginBottom: 8,
+            color: TEXT,
+            textAlign: "center",
           }}
         >
-          {STAGES.map((stage, i) => (
-            <StageCard
-              key={stage.id}
-              stage={stage}
-              index={i}
-              isActive={activeStage === stage.id}
-              onClick={() => {
-                setActiveStage(activeStage === stage.id ? null : stage.id);
-                setTypeFilter(null);
-                setTimeout(() => scrollTo("directory"), 200);
-              }}
-            />
-          ))}
+          Where are you on your journey?
+        </h2>
+        <p
+          style={{
+            fontSize: 14,
+            color: TEXT_DIM,
+            textAlign: "center",
+            marginBottom: 32,
+          }}
+        >
+          Select a stage to filter resources, or browse everything below.
+        </p>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+            gap: 12,
+            marginBottom: 16,
+          }}
+        >
+          {STAGES.map((stage, i) => {
+            const isActive = activeStage === stage.id;
+            return (
+              <button
+                key={stage.id}
+                onClick={() => handleStageClick(stage.id)}
+                style={{
+                  background: isActive ? `${stage.color}20` : SURFACE,
+                  border: `1.5px solid ${isActive ? stage.color : BORDER}`,
+                  borderRadius: 12,
+                  padding: "18px 16px 14px",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  transition: "all 0.25s ease",
+                  animation: `fadeUp 0.4s ease ${i * 0.06}s both`,
+                  transform: isActive ? "scale(1.02)" : "scale(1)",
+                  boxShadow: isActive
+                    ? `0 4px 20px ${stage.color}25`
+                    : "none",
+                }}
+              >
+                <div style={{ fontSize: 28, marginBottom: 8 }}>{stage.icon}</div>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: isActive ? stage.color : TEXT,
+                    marginBottom: 4,
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {stage.label}
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: isActive ? stage.color : TEXT_DIM,
+                    fontStyle: "italic",
+                    opacity: isActive ? 0.9 : 0.7,
+                  }}
+                >
+                  {stage.tagline}
+                </div>
+              </button>
+            );
+          })}
         </div>
 
-        {activeStageData && (
-          <div
+        {activeStage && (
+          <button
+            onClick={() => setActiveStage(null)}
             style={{
-              marginTop: 40,
-              textAlign: "center",
-              padding: "32px 24px",
-              background: `linear-gradient(135deg, ${activeStageData.color}11, transparent)`,
-              borderRadius: 20,
-              border: `1px solid ${activeStageData.color}22`,
-              opacity: 0,
-              animation: "fadeSlideUp 0.4s ease forwards",
+              display: "block",
+              margin: "0 auto",
+              background: "transparent",
+              border: `1px solid ${BORDER}`,
+              borderRadius: 8,
+              padding: "8px 20px",
+              color: TEXT_MID,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.2s",
             }}
           >
-            <div
+            ✕ Clear Filter — Show All Resources
+          </button>
+        )}
+      </section>
+
+      {/* ─── ACTIVE STAGE BANNER ─── */}
+      {activeStageData && (
+        <div
+          style={{
+            maxWidth: 1200,
+            margin: "0 auto 24px",
+            padding: "0 24px",
+            animation: "fadeIn 0.3s ease",
+          }}
+        >
+          <div
+            style={{
+              background: `${activeStageData.color}12`,
+              border: `1px solid ${activeStageData.color}30`,
+              borderRadius: 12,
+              padding: "20px 24px",
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
+            }}
+          >
+            <span style={{ fontSize: 36 }}>{activeStageData.icon}</span>
+            <div>
+              <h3
+                style={{
+                  fontSize: 18,
+                  fontWeight: 700,
+                  color: activeStageData.color,
+                  marginBottom: 4,
+                  fontFamily: "'Playfair Display', Georgia, serif",
+                }}
+              >
+                {activeStageData.label}
+              </h3>
+              <p style={{ fontSize: 14, color: TEXT_MID, lineHeight: 1.5 }}>
+                {activeStageData.description}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── SEARCH & RESOURCE GRID ─── */}
+      <section
+        ref={resourcesRef}
+        style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 16,
+            marginBottom: 24,
+          }}
+        >
+          <div>
+            <h2
               style={{
                 fontFamily: "'Playfair Display', Georgia, serif",
                 fontSize: 22,
                 fontWeight: 700,
-                color: activeStageData.color,
-                marginBottom: 8,
+                color: TEXT,
               }}
             >
-              {activeStageData.icon} {activeStageData.label}
-            </div>
-            <p
-              style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: 15,
-                color: "rgba(240,236,227,0.6)",
-                maxWidth: 500,
-                margin: "0 auto",
-                lineHeight: 1.6,
-              }}
-            >
-              {activeStageData.description}
+              {activeStageData
+                ? `Resources for "${activeStageData.label}"`
+                : "All Resources"}
+            </h2>
+            <p style={{ fontSize: 13, color: TEXT_DIM, marginTop: 4 }}>
+              {filteredResources.length} resource
+              {filteredResources.length !== 1 ? "s" : ""} found
+              {searchQuery ? ` matching "${searchQuery}"` : ""}
             </p>
-            <div
-              style={{
-                marginTop: 16,
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: 14,
-                fontWeight: 600,
-                color: activeStageData.color,
-              }}
-            >
-              {filteredResources.length} resource{filteredResources.length !== 1 && "s"} available ↓
-            </div>
           </div>
-        )}
-      </section>
 
-      {/* ========== DIRECTORY ========== */}
-      <section
-        id="directory"
-        ref={(el) => (sectionRefs.current["directory"] = el)}
-        style={{
-          padding: "60px 24px 100px",
-          maxWidth: 1200,
-          margin: "0 auto",
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <span
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 12,
-              fontWeight: 700,
-              color: "#E8A838",
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-            }}
-          >
-            Resource Directory
-          </span>
-          <h2
-            style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: 36,
-              fontWeight: 800,
-              marginTop: 12,
-              lineHeight: 1.15,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            {activeStage
-              ? `Resources for "${activeStageData?.label}"`
-              : "All Resources"}
-          </h2>
-        </div>
-
-        {/* Search + Filters */}
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            marginBottom: 32,
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div style={{ position: "relative", flex: "1 1 280px", maxWidth: 400 }}>
+          <div style={{ position: "relative" }}>
+            <input
+              type="text"
+              placeholder="Search resources..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                background: SURFACE,
+                border: `1px solid ${BORDER}`,
+                borderRadius: 10,
+                padding: "10px 16px 10px 38px",
+                color: TEXT,
+                fontSize: 14,
+                width: 260,
+                outline: "none",
+                fontFamily: "inherit",
+                transition: "border-color 0.2s",
+              }}
+              onFocus={(e) =>
+                (e.target.style.borderColor = ACCENT)
+              }
+              onBlur={(e) =>
+                (e.target.style.borderColor = BORDER)
+              }
+            />
             <span
               style={{
                 position: "absolute",
-                left: 14,
+                left: 12,
                 top: "50%",
                 transform: "translateY(-50%)",
                 fontSize: 16,
@@ -1198,332 +883,138 @@ export default function WVFounderHub() {
             >
               🔍
             </span>
-            <input
-              type="text"
-              placeholder="Search programs, locations..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "12px 16px 12px 40px",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRadius: 12,
-                color: "#F0ECE3",
-                fontSize: 14,
-                fontFamily: "'DM Sans', sans-serif",
-                outline: "none",
-                transition: "border-color 0.2s",
-              }}
-              onFocus={(e) => (e.target.style.borderColor = "rgba(232,168,56,0.4)")}
-              onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
-            />
-          </div>
-
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
-            <button
-              onClick={() => setTypeFilter(null)}
-              style={{
-                padding: "8px 16px",
-                borderRadius: 20,
-                border: !typeFilter ? "1px solid #E8A838" : "1px solid rgba(255,255,255,0.1)",
-                background: !typeFilter ? "rgba(232,168,56,0.12)" : "rgba(255,255,255,0.03)",
-                color: !typeFilter ? "#E8A838" : "rgba(240,236,227,0.5)",
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
-                transition: "all 0.2s",
-                letterSpacing: "0.02em",
-              }}
-            >
-              All Types
-            </button>
-            {RESOURCE_TYPES.map((type) => (
-              <button
-                key={type}
-                onClick={() => setTypeFilter(typeFilter === type ? null : type)}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: 20,
-                  border:
-                    typeFilter === type
-                      ? "1px solid #E8A838"
-                      : "1px solid rgba(255,255,255,0.1)",
-                  background:
-                    typeFilter === type
-                      ? "rgba(232,168,56,0.12)"
-                      : "rgba(255,255,255,0.03)",
-                  color:
-                    typeFilter === type ? "#E8A838" : "rgba(240,236,227,0.5)",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontFamily: "'DM Sans', sans-serif",
-                  transition: "all 0.2s",
-                  letterSpacing: "0.02em",
-                }}
-              >
-                {type}
-              </button>
-            ))}
           </div>
         </div>
 
-        {activeStage && (
-          <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <button
-              onClick={() => {
-                setActiveStage(null);
-                setTypeFilter(null);
-              }}
-              style={{
-                background: "none",
-                border: "none",
-                color: "rgba(240,236,227,0.45)",
-                cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: 13,
-                fontWeight: 500,
-                textDecoration: "underline",
-                textUnderlineOffset: 3,
-              }}
-            >
-              ✕ Clear stage filter — show all resources
-            </button>
+        {filteredResources.length > 0 ? (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+              gap: 16,
+            }}
+          >
+            {filteredResources.map((r, i) => (
+              <div
+                key={r.name}
+                style={{ animation: `fadeUp 0.4s ease ${i * 0.04}s both` }}
+              >
+                <ResourceCard
+                  resource={r}
+                  stageColor={activeStageData?.color || null}
+                />
+              </div>
+            ))}
           </div>
-        )}
-
-        {filteredResources.length === 0 ? (
+        ) : (
           <div
             style={{
               textAlign: "center",
               padding: "60px 24px",
-              opacity: 0,
-              animation: "fadeIn 0.4s ease forwards",
+              color: TEXT_DIM,
             }}
           >
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🔭</div>
-            <div
-              style={{
-                fontFamily: "'Playfair Display', Georgia, serif",
-                fontSize: 22,
-                fontWeight: 700,
-                marginBottom: 8,
-              }}
-            >
-              No matches found
-            </div>
-            <p
-              style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: 14,
-                color: "rgba(240,236,227,0.5)",
-              }}
-            >
-              Try adjusting your filters or search terms.
+            <div style={{ fontSize: 40, marginBottom: 16 }}>🔍</div>
+            <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>
+              No resources match your search
             </p>
-          </div>
-        ) : (
-          <div
-            className="resource-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
-              gap: 20,
-            }}
-          >
-            {filteredResources
-              .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))
-              .map((r, i) => (
-                <ResourceCard key={r.name} resource={r} index={i} />
-              ))}
+            <p style={{ fontSize: 14 }}>
+              Try a different keyword or clear your filters.
+            </p>
           </div>
         )}
       </section>
 
-      {/* ========== VANTAGE CTA ========== */}
+      {/* ─── CTA SECTION ─── */}
       <section
         style={{
-          padding: "80px 24px",
-          maxWidth: 900,
-          margin: "0 auto",
+          borderTop: `1px solid ${BORDER}`,
+          padding: "64px 24px",
           textAlign: "center",
         }}
       >
-        <div
-          style={{
-            background: "linear-gradient(135deg, rgba(212,88,42,0.08), rgba(232,168,56,0.08))",
-            border: "1px solid rgba(232,168,56,0.15)",
-            borderRadius: 24,
-            padding: "56px 40px",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: -60,
-              right: -60,
-              width: 200,
-              height: 200,
-              borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(232,168,56,0.08), transparent)",
-              animation: "pulse 4s ease-in-out infinite",
-            }}
-          />
-          <span
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 12,
-              fontWeight: 700,
-              color: "#D4582A",
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-            }}
-          >
-            Applications Open
-          </span>
+        <div style={{ maxWidth: 600, margin: "0 auto" }}>
           <h2
             style={{
               fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: 36,
-              fontWeight: 800,
-              marginTop: 12,
-              marginBottom: 16,
-              lineHeight: 1.15,
-              letterSpacing: "-0.02em",
+              fontSize: 28,
+              fontWeight: 700,
+              color: TEXT,
+              marginBottom: 12,
             }}
           >
-            Vantage Ventures — Fall 2026 Cohort
+            Ready to start building?
           </h2>
           <p
             style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 16,
-              color: "rgba(240,236,227,0.6)",
-              maxWidth: 540,
-              margin: "0 auto 8px",
-              lineHeight: 1.65,
-            }}
-          >
-            13 weeks of real user validation, not pitch theater. Learn unbiased
-            assumption testing. Compete for our $10,000 Validation Day prize.
-          </p>
-          <p
-            style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 14,
-              fontWeight: 700,
-              color: "#E8A838",
+              fontSize: 15,
+              color: TEXT_MID,
+              lineHeight: 1.7,
               marginBottom: 28,
             }}
           >
-            Application deadline: May 7, 2026
+            Vantage Ventures is accepting applications for the Fall 2026 cohort.
+            Our 13-week accelerator helps WV founders test assumptions, talk to
+            real users, and position themselves for investment.
           </p>
           <a
-            href="#"
+            href="https://business.wvu.edu/research-outreach/vantage-ventures/accelerator-program"
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
               display: "inline-block",
-              background: "linear-gradient(135deg, #E8A838, #D4582A)",
-              color: "#fff",
-              padding: "14px 36px",
-              borderRadius: 12,
+              background: ACCENT,
+              color: BG,
               fontSize: 15,
               fontWeight: 700,
+              padding: "14px 32px",
+              borderRadius: 10,
               textDecoration: "none",
-              fontFamily: "'DM Sans', sans-serif",
-              letterSpacing: "0.02em",
-              boxShadow: "0 4px 24px rgba(232,168,56,0.3)",
-              transition: "transform 0.2s, box-shadow 0.2s",
+              transition: "all 0.2s",
+              boxShadow: `0 4px 20px ${ACCENT}30`,
             }}
           >
-            Apply Now →
+            Apply Now — Deadline May 7
           </a>
+          <p
+            style={{
+              fontSize: 12,
+              color: TEXT_DIM,
+              marginTop: 16,
+            }}
+          >
+            Questions? Email{" "}
+            <a
+              href="mailto:Vantage@mail.wvu.edu"
+              style={{ color: ACCENT, textDecoration: "none" }}
+            >
+              Vantage@mail.wvu.edu
+            </a>
+          </p>
         </div>
       </section>
 
-      {/* ========== ABOUT ========== */}
-      <section
-        id="about"
-        ref={(el) => (sectionRefs.current["about"] = el)}
-        style={{
-          padding: "60px 24px 100px",
-          maxWidth: 800,
-          margin: "0 auto",
-          textAlign: "center",
-        }}
-      >
-        <span
-          style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 12,
-            fontWeight: 700,
-            color: "#E8A838",
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-          }}
-        >
-          About This Project
-        </span>
-        <h2
-          style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: 32,
-            fontWeight: 800,
-            marginTop: 12,
-            marginBottom: 20,
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Built for WV Founders, by WV Founders
-        </h2>
-        <p
-          style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 15,
-            color: "rgba(240,236,227,0.55)",
-            lineHeight: 1.75,
-            maxWidth: 600,
-            margin: "0 auto 32px",
-          }}
-        >
-          The Mountain State's entrepreneurship ecosystem is growing fast — but
-          navigating it shouldn't require a map and a compass. This directory
-          connects aspiring founders with the right programs, funding sources,
-          and communities at every stage of their journey.
-        </p>
-        <p
-          style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 13,
-            color: "rgba(240,236,227,0.35)",
-            lineHeight: 1.6,
-          }}
-        >
-          A project of{" "}
-          <span style={{ color: "#E8A838", fontWeight: 600 }}>Vantage Ventures</span>{" "}
-          · Wheeling, WV
-        </p>
-      </section>
-
-      {/* Footer */}
+      {/* ─── FOOTER ─── */}
       <footer
         style={{
-          borderTop: "1px solid rgba(255,255,255,0.06)",
+          borderTop: `1px solid ${BORDER}`,
           padding: "32px 24px",
           textAlign: "center",
         }}
       >
-        <p
-          style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 12,
-            color: "rgba(240,236,227,0.3)",
-          }}
-        >
-          © 2026 WV Founder Hub · Powered by Vantage Ventures · Wheeling, West Virginia
+        <p style={{ fontSize: 12, color: TEXT_DIM, lineHeight: 1.8 }}>
+          Built by{" "}
+          <a
+            href="https://business.wvu.edu/research-outreach/vantage-ventures"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: ACCENT, textDecoration: "none" }}
+          >
+            Vantage Ventures
+          </a>{" "}
+          · WVU John Chambers College of Business and Economics
+          <br />
+          Wheeling, WV · Part of the West Virginia Entrepreneurship Ecosystem
         </p>
       </footer>
     </div>
